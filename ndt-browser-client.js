@@ -92,19 +92,22 @@ NDTjs.prototype.find_ndt_server = function () {
     var mlab_ns_request = new XMLHttpRequest();
     var mlab_ns_url = "http://mlab-ns.appspot.com/ndt?format=json";
 
+    mlab_ns_request.onreadystatechange = function() {
+        if (mlab_ns_request.readyState == 4) {
+            if (mlab_ns_request.status == 200) {
+                this.mlab_server = JSON.parse(mlab_ns_request.responseText);
+                this.mlab_server.metro = this.mlab_server.site.slice(0, 3);
+                this.logger('M-Lab NS lookup answer:' + this.mlab_server);
+                return this.mlab_server;
+            } else {
+                NDTjs.mlab_server = undefined;
+                NDTjs.logger('M-Lab NS lookup failed.');
+                return false;
+            }
+        }
+    }
     mlab_ns_request.open("GET", mlab_ns_url, false);
     mlab_ns_request.send();
-
-    if (mlab_ns_request.status === 200) {
-        this.mlab_server = JSON.parse(mlab_ns_request.responseText);
-        this.mlab_server.metro = this.mlab_server.site.slice(0, 3);
-        this.logger('M-Lab NS lookup answer:' + this.mlab_server);
-    } else {
-        this.mlab_server = undefined;
-        this.logger('M-Lab NS lookup failed.');
-    }
-
-    return this.mlab_server;
 };
 
 /**
